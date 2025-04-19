@@ -10,7 +10,8 @@ def main():
     try:
         pdf_converter = PDF2MarkDown(pdf_file_path, process_images)
         markdown_content = pdf_converter.convert()
-        logging.info("[MAIN] Conversion successful.")
+        # write in disk
+        print(markdown_content)
     except Exception as e:
         logging.error(f"[MAIN] An error occurred: {e}")
 
