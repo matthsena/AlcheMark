@@ -1,11 +1,60 @@
-from models import PDFResult
+from models import PDFResult, FormattedResult, FormattedMetadata
+from typing import List
+import re
 
 class FormatterMD:
-    def __init__(self, content: PDFResult):
+    def __init__(self, content: List[PDFResult]):
         self.content = content
 
     def _check_content(self):
-        if not isinstance(self.content, PDFResult):
-            raise ValueError("[FORMATTER] Content must be of type PDFResult.")
-        if not self.content.text:
-            raise ValueError("[FORMATTER] Content is empty or invalid.")
+        if not isinstance(self.content, list):
+            raise ValueError("[FORMATTER] Content must be a List of PDFResult.")
+        else:
+            for item in self.content:
+                if not isinstance(item, PDFResult):
+                    raise ValueError("[FORMATTER] Content must be a List of PDFResult.")
+                if not item.text or not item.text.strip():
+                    raise ValueError("[FORMATTER] Content text is empty.")
+            if not len(self.content):
+                raise ValueError("[FORMATTER] Content is empty.")
+            
+    def _count_markdown_elements(self, text):
+        try:
+            titles = len(re.findall(r'^\s*#{1,6}\s+.+$', text, re.MULTILINE))
+            ordered_lists = len(re.findall(r'^\s*\d+[.)]\s+.+', text, re.MULTILINE))
+            unordered_lists = len(re.findall(r'^\s*[-*+]\s+.+', text, re.MULTILINE))
+            links = len(re.findall(r'\[([^\]]+)\]\(([^)]+)\)|<(https?://[^>]+)>', text))
+            
+            return {
+                'titles': titles,
+                'lists': ordered_lists + unordered_lists,
+                'links': links
+            }
+        except Exception as e:
+            raise ValueError(f"[FORMATTER] Error counting markdown elements: {e}")
+        
+    def format(self) -> List[FormattedResult]:
+        try:
+            self._check_content()
+            results = []
+            for item in self.content:
+                markdown_elements = self._count_markdown_elements(item.text)
+                formatted_data = FormattedResult(
+                    metadata=FormattedMetadata(
+                        file_path=item.metadata.file_path,
+                        page=item.metadata.page,
+                        page_count=item.metadata.page_count
+                    ),
+                    tables=len(item.tables) if hasattr(item, 'tables') and item.tables else 0,
+                    images=len(item.images) if hasattr(item, 'images') and item.images else 0,
+                    text=item.text or "",
+                    text_length=len(item.text) if item.text else 0,
+                    titles=markdown_elements['titles'],
+                    lists=markdown_elements['lists'],
+                    links=markdown_elements['links']
+                )
+                results.append(formatted_data)
+            return results
+
+        except Exception as e:
+            raise ValueError(f"[FORMATTER] Error formatting content: {e}")
