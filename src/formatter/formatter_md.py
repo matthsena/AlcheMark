@@ -1,10 +1,12 @@
-from models import PDFResult, FormattedResult, FormattedMetadata
+from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements
 from typing import List
+import tiktoken
 import re
 
 class FormatterMD:
     def __init__(self, content: List[PDFResult]):
         self.content = content
+        self.encoding = tiktoken.encoding_for_model("gpt-4o")
 
     def _check_content(self):
         if not isinstance(self.content, list):
@@ -43,15 +45,18 @@ class FormatterMD:
                     metadata=FormattedMetadata(
                         file_path=item.metadata.file_path,
                         page=item.metadata.page,
-                        page_count=item.metadata.page_count
+                        page_count=item.metadata.page_count,
+                        text_length=len(item.text) if item.text else 0,
                     ),
-                    tables=len(item.tables) if hasattr(item, 'tables') and item.tables else 0,
-                    images=len(item.images) if hasattr(item, 'images') and item.images else 0,
+                    elements=FormattedElements(
+                        tables=len(item.tables) if hasattr(item, 'tables') and item.tables else 0,
+                        images=len(item.images) if hasattr(item, 'images') and item.images else 0,
+                        titles=markdown_elements['titles'],
+                        lists=markdown_elements['lists'],
+                        links=markdown_elements['links'],
+                    ),
                     text=item.text or "",
-                    text_length=len(item.text) if item.text else 0,
-                    titles=markdown_elements['titles'],
-                    lists=markdown_elements['lists'],
-                    links=markdown_elements['links']
+                    tokens=len(self.encoding.encode(item.text)) if item.text else 0
                 )
                 results.append(formatted_data)
             return results

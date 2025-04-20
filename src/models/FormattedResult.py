@@ -5,14 +5,19 @@ class FormattedMetadata(BaseModel):
     file_path: str
     page: int
     page_count: int
+    text_length: int
     processed_timestamp: float = Field(default_factory=time.time)
+
+
+class FormattedElements(BaseModel):
+    tables: int = 0
+    images: int = 0
+    titles: int = 0
+    lists: int = 0
+    links: int = 0
 
 class FormattedResult(BaseModel):
     metadata: FormattedMetadata
-    tables: int
-    images: int
+    elements: FormattedElements
     text: str
-    text_length: int
-    titles: int
-    lists: int
-    links: int
+    tokens: int
