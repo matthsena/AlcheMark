@@ -1,4 +1,4 @@
-from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements
+from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
 from typing import List
 import tiktoken
 from langdetect import detect as detect_language
@@ -23,15 +23,23 @@ class FormatterMD:
             
     def _count_markdown_elements(self, text):
         try:
-            titles = len(re.findall(r'^\s*#{1,6}\s+.+$', text, re.MULTILINE))
-            ordered_lists = len(re.findall(r'^\s*\d+[.)]\s+.+', text, re.MULTILINE))
-            unordered_lists = len(re.findall(r'^\s*[-*+]\s+.+', text, re.MULTILINE))
-            links = len(re.findall(r'\[([^\]]+)\]\(([^)]+)\)|<(https?://[^>]+)>', text))
+            titles = re.findall(r'^\s*#{1,6}\s+.+$', text, re.MULTILINE)
+            ordered_lists = re.findall(r'^\s*\d+[.)]\s+.+', text, re.MULTILINE)
+            unordered_lists = re.findall(r'^\s*[-*+]\s+.+', text, re.MULTILINE)
+            links = []
+
+            md_links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', text)
+            for link_text, link_url in md_links:
+                links.append(Link(text=link_text, url=link_url))
             
+            html_links = re.findall(r'<(https?://[^>]+)>', text)
+            for url in html_links:
+                links.append(Link(text=url, url=url))
+            lists = ordered_lists + unordered_lists
             return {
-                'titles': titles,
-                'lists': ordered_lists + unordered_lists,
-                'links': links
+                'titles': [] if not titles else titles,
+                'lists': [] if not lists else lists,
+                'links': [] if not links else links
             }
         except Exception as e:
             raise ValueError(f"[FORMATTER] Error counting markdown elements: {e}")
@@ -50,8 +58,8 @@ class FormatterMD:
                         text_length=len(item.text) if item.text else 0,
                     ),
                     elements=FormattedElements(
-                        tables=len(item.tables) if hasattr(item, 'tables') and item.tables else 0,
-                        images=len(item.images) if hasattr(item, 'images') and item.images else 0,
+                        tables=item.tables if hasattr(item, 'tables') and item.tables else [],
+                        images=item.images if hasattr(item, 'images') and item.images else [],
                         titles=markdown_elements['titles'],
                         lists=markdown_elements['lists'],
                         links=markdown_elements['links'],

@@ -1,5 +1,11 @@
 import time
 from pydantic import BaseModel, Field
+from typing import List, Any
+from .PDFResult import Image, Table
+
+class Link(BaseModel):
+    text: str
+    url: str
 
 class FormattedMetadata(BaseModel):
     file_path: str
@@ -10,11 +16,11 @@ class FormattedMetadata(BaseModel):
 
 
 class FormattedElements(BaseModel):
-    tables: int = 0
-    images: int = 0
-    titles: int = 0
-    lists: int = 0
-    links: int = 0
+    tables: List[Table] = []
+    images: List[Image] = []
+    titles: List[str] = []
+    lists: List[str] = []
+    links: List[Link] = []
 
 class FormattedResult(BaseModel):
     metadata: FormattedMetadata

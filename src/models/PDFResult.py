@@ -27,16 +27,10 @@ class Metadata(BaseModel):
 class Image(BaseModel):
     number: int
     bbox: Rect
-    transform: Tuple[float, float, float, float, float, float]
     width: int
     height: int
     colorspace: int
     cs_name: str = Field(..., alias='cs-name')
-    xres: int
-    yres: int
-    bpc: int
-    size: int
-    has_mask: bool = Field(..., alias='has-mask')
 
     @model_validator(mode='before')
     @classmethod
@@ -52,10 +46,30 @@ class Image(BaseModel):
         return data
 
 
+class Table(BaseModel):
+    bbox: Union[Rect, List[float]]
+    rows: int
+    columns: int
+
+    @model_validator(mode='before')
+    @classmethod
+    def process_bbox(cls, data):
+        if isinstance(data, dict) and 'bbox' in data:
+            # Handle bbox if it's a list of floats [x0, y0, x1, y1]
+            if isinstance(data['bbox'], list) and len(data['bbox']) == 4:
+                data['bbox'] = {
+                    'x0': data['bbox'][0],
+                    'y0': data['bbox'][1],
+                    'x1': data['bbox'][2],
+                    'y1': data['bbox'][3]
+                }
+        return data
+
+
 class PDFResult(BaseModel):
     metadata: Metadata
     toc_items: List[List[Union[int, str]]]
-    tables: List[Dict[str, Any]]
+    tables: List[Table]
     images: List[Image]
     graphics: List[Dict[str, Any]]
     text: str
