@@ -1,6 +1,7 @@
 from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements
 from typing import List
 import tiktoken
+from langdetect import detect as detect_language
 import re
 
 class FormatterMD:
@@ -56,7 +57,8 @@ class FormatterMD:
                         links=markdown_elements['links'],
                     ),
                     text=item.text or "",
-                    tokens=len(self.encoding.encode(item.text)) if item.text else 0
+                    tokens=len(self.encoding.encode(item.text)) if item.text else 0,
+                    language=detect_language(item.text)
                 )
                 results.append(formatted_data)
             return results

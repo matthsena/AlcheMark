@@ -21,3 +21,4 @@ class FormattedResult(BaseModel):
     elements: FormattedElements
     text: str
     tokens: int
+    language: str
