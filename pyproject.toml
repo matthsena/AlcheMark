@@ -9,5 +9,23 @@ dependencies = [
     "pydantic>=2.11.3",
     "pymupdf>=1.25.5",
     "pymupdf4llm>=0.0.21",
+    "pytest-cov>=6.1.1",
     "tiktoken>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+filterwarnings = [
+    "ignore::DeprecationWarning:importlib._bootstrap:241",
+    "ignore::DeprecationWarning:_pytest.runner",
+    "ignore::DeprecationWarning:sys"
 ]

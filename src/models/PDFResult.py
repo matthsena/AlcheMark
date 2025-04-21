@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Tuple, Union
+from typing import List, Dict, Any, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 
 class Rect(BaseModel):
@@ -29,8 +29,6 @@ class Image(BaseModel):
     bbox: Rect
     width: int
     height: int
-    colorspace: int
-    cs_name: str = Field(..., alias='cs-name')
 
     @model_validator(mode='before')
     @classmethod
