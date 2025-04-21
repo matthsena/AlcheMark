@@ -1,9 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
-setup(
-    name="alchemark-ai",
-    version="0.1.0",
-    description="AlcheMark-ai - PDF to Markdown conversion",
-    packages=find_packages(),
-    python_requires=">=3.11",
-) 
+# This file is kept minimal as the main configuration is in pyproject.toml
+setup() 

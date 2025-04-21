@@ -1,5 +1,5 @@
 [run]
-source = src
+source = alchemark_ai
 omit =
     */main.py
     */__init__.py

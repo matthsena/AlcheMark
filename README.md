@@ -4,7 +4,60 @@
   <img src="assets/icon.png" alt="AlcheMark AI Logo" width="400"/>
 </p>
 
-AlcheMark is a lightweight, alchemical-inspired toolkit that transmutes PDF documents into structured Markdown pages—complete with rich metadata and markdown element annotations—empowering you to uncover insights page by page.
+AlcheMark is a lightweight PDF to Markdown, alchemical-inspired toolkit that transmutes PDF documents into structured Markdown pages—complete with rich metadata and markdown element annotations—empowering you to uncover insights page by page.
+
+## Installation
+
+```bash
+# Install from PyPI
+pip install alchemark-ai
+
+# Or install from source
+git clone https://github.com/matthsena/AlcheMark-ai.git
+cd AlcheMark-ai
+pip install -e .
+```
+
+## Usage
+
+```python
+from alchemark_ai import pdf2md
+
+# Convert PDF to markdown
+results = pdf2md("path/to/document.pdf", process_images=True)
+
+# Each result is a FormattedResult object with the structure:
+# {
+#   "metadata": {
+#     "file_path": str,       # Path to the PDF file
+#     "page": int,            # Page number
+#     "page_count": int,      # Total number of pages
+#     "text_length": int,     # Length of the extracted text
+#     "processed_timestamp": float  # Processing timestamp
+#   },
+#   "elements": {
+#     "tables": List[Table],  # Tables extracted from the page
+#     "images": List[Image],  # Images extracted from the page
+#     "titles": List[str],    # Titles/headers detected
+#     "lists": List[str],     # List items detected
+#     "links": List[Link]     # Links with text and URL
+#   },
+#   "text": str,              # Markdown text content
+#   "tokens": int,            # Number of tokens in the text
+#   "language": str           # Detected language
+# }
+
+# Access the markdown text of the first page
+markdown_text = results[0].text
+
+# Get metadata for the first page
+page_number = results[0].metadata.page
+total_pages = results[0].metadata.page_count
+
+# Check elements detected in the page
+tables_count = len(results[0].elements.tables)
+images_count = len(results[0].elements.images)
+```
 
 ## Overview
 
@@ -19,43 +72,23 @@ AlcheMark AI provides a seamless solution for converting PDF documents into well
 - **Token Counting**: Built-in token counting using tiktoken for LLM integration
 - **Structured Output**: Get page-by-page results with detailed metadata
 
-## Project Structure
+## Extracted Data Fields
 
-- **pdf2md**: Core module for PDF to Markdown conversion using pymupdf4llm
-- **formatter**: Processing and analysis of converted markdown content
-- **models**: Pydantic data models for standardized input/output
-- **configs**: Configuration settings including logging
-
-## Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/matthsena/AlcheMark-ai.git
-cd AlcheMark-ai
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the example
-python -m src.main
-```
-
-## How It Works
-
-1. **PDF Processing**: The `PDF2MarkDown` class handles the conversion of PDF files to markdown format using pymupdf4llm
-2. **Formatting**: The `FormatterMD` class processes the converted markdown to:
-   - Count markdown elements (headings, lists, links)
-   - Track tables and images
-   - Calculate token counts
-   - Structure metadata
-3. **Output**: Results are returned as `FormattedResult` objects with standardized structure
-
-## Use Cases
-
-- Convert research papers to markdown for easier reference
-- Transform documentation into markdown for integration with wikis
-- Prepare PDF content for processing with Large Language Models
-- Create searchable and analyzable versions of PDF libraries
+| Field | Type | Description |
+|-------|------|-------------|
+| **metadata.file_path** | `str` | Path to the original PDF file |
+| **metadata.page** | `int` | Current page number |
+| **metadata.page_count** | `int` | Total number of pages in the document |
+| **metadata.text_length** | `int` | Character count of the extracted text |
+| **metadata.processed_timestamp** | `float` | Unix timestamp when the page was processed |
+| **elements.tables** | `List[Table]` | Tables extracted from the page with their structure preserved |
+| **elements.images** | `List[Image]` | Images extracted from the page with their metadata |
+| **elements.titles** | `List[str]` | Headings and titles detected in the page |
+| **elements.lists** | `List[str]` | List items (ordered and unordered) found in the page |
+| **elements.links** | `List[Link]` | Hyperlinks with their display text and target URLs |
+| **text** | `str` | The complete markdown text content of the page |
+| **tokens** | `int` | Token count for the page (useful for LLM context planning) |
+| **language** | `str` | Detected language of the page content |
 
 ## Contributing
 
