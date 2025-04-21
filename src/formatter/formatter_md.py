@@ -1,4 +1,4 @@
-from src.models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
+from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
 from typing import List
 import tiktoken
 from langdetect import detect as detect_language

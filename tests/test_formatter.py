@@ -5,8 +5,8 @@ import re
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.formatter.formatter_md import FormatterMD
-from src.models import PDFResult, FormattedResult
+from formatter.formatter_md import FormatterMD
+from models import PDFResult, FormattedResult
 
 
 @pytest.fixture

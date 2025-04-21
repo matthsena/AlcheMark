@@ -1,6 +1,6 @@
-from src.pdf2md import PDF2MarkDown
-from src.formatter import FormatterMD
-from src.configs.logger import logging
+from pdf2md import PDF2MarkDown
+from formatter import FormatterMD
+from configs.logger import logging
 import os
 
 def main():

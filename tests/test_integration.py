@@ -2,11 +2,9 @@ import pytest
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from src.pdf2md.pdf2md import PDF2MarkDown
-from src.formatter.formatter_md import FormatterMD
-from src.models import PDFResult, FormattedResult
+from pdf2md.pdf2md import PDF2MarkDown
+from formatter.formatter_md import FormatterMD
+from models import PDFResult, FormattedResult
 
 
 def test_pdf_to_formatted_markdown_integration(sample_pdf_path, monkeypatch):
@@ -64,9 +62,9 @@ def test_pdf_to_formatted_markdown_integration(sample_pdf_path, monkeypatch):
     assert formatted_results[0].metadata.page_count == 1
     assert formatted_results[0].metadata.text_length > 0
     
-    assert len(formatted_results[0].elements.titles) == 1
-    assert len(formatted_results[0].elements.lists) == 4
-    assert len(formatted_results[0].elements.links) == 1
+    assert len(formatted_results[0].elements.titles) == 1  # "# Sample Document"
+    assert len(formatted_results[0].elements.lists) == 4  # 2 unordered + 2 ordered items
+    assert len(formatted_results[0].elements.links) == 1  # 1 link
     
     assert formatted_results[0].text.startswith("# Sample Document")
     assert formatted_results[0].tokens > 0

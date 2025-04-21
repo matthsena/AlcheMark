@@ -1,10 +1,11 @@
+import pytest
 import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
-from src.models.PDFResult import Rect, Metadata, Image, Table
+from models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
+from models.PDFResult import Rect, Metadata, Image, Table
 
 
 def test_rect_model():
