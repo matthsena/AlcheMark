@@ -5,12 +5,16 @@ A toolkit that converts PDF documents into structured Markdown
 with rich metadata and markdown element annotations.
 """
 
-from .pdf2md import PDF2MarkDown
-from .formatter import FormatterMD
-from .models import FormattedResult
-from typing import List, Optional
+# Use relative imports for internal package structure
+from .pdf2md.pdf2md import PDF2MarkDown
+from .formatter.formatter_md import FormatterMD
+from .models.FormattedResult import FormattedResult, FormattedMetadata, FormattedElements
+from typing import List
 
-__version__ = "0.1.0"
+__version__ = "0.1.5"
+
+# Define what gets imported with 'from alchemark_ai import *'
+__all__ = ['PDF2MarkDown', 'FormatterMD', 'FormattedResult', 'FormattedMetadata', 'FormattedElements', 'pdf2md']
 
 def pdf2md(
     pdf_file_path: str, 

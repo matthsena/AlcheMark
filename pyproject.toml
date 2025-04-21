@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alchemark-ai"
-version = "0.1.0"
+version = "0.1.5"
 description = "AlcheMark AI - PDF to Markdown conversion with rich metadata and element analysis"
 readme = "README.md"
 authors = [
@@ -38,8 +38,11 @@ dev = [
 "Bug Tracker" = "https://github.com/matthsena/AlcheMark-ai/issues"
 
 [tool.setuptools]
-package-dir = {"" = "."}
-packages = ["alchemark_ai"]
+packages = ["alchemark_ai", 
+            "alchemark_ai.pdf2md", 
+            "alchemark_ai.formatter", 
+            "alchemark_ai.models", 
+            "alchemark_ai.configs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

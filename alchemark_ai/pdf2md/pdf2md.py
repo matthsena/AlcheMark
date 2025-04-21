@@ -1,7 +1,7 @@
 import pymupdf4llm
 import os
-from configs.logger import logging
-from models import PDFResult
+from ..configs.logger import logging
+from ..models import PDFResult
 from typing import List
 
 class PDF2MarkDown:
