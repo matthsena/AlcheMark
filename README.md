@@ -1,4 +1,6 @@
-# AlcheMark AI. 
+# AlcheMark.
+
+Your files ready for Gen AI ✨🚀
 
 <p align="center">
   <img src="assets/icon.png" alt="AlcheMark AI Logo" width="400"/>
@@ -58,6 +60,12 @@ total_pages = results[0].metadata.page_count
 tables_count = len(results[0].elements.tables)
 images_count = len(results[0].elements.images)
 ```
+
+## Google Colab Example
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16l9e60fktbmu_0fo9rfOxZpWbpq2weZH?usp=sharing)
+
+Try AlcheMark AI directly in your browser with our interactive Google Colab notebook!
 
 ## Overview
 
