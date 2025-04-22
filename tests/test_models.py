@@ -86,20 +86,22 @@ def test_table_model():
     table = Table(
         bbox=Rect(x0=1.0, y0=2.0, x1=3.0, y1=4.0),
         rows=5,
-        columns=3
+        columns=3,
+        content="Cell 1 Cell 2 Cell 3 Cell 4 Cell 5 Cell 6"
     )
     
     assert isinstance(table.bbox, Rect)
     assert table.bbox.x0 == 1.0
     assert table.rows == 5
     assert table.columns == 3
-
+    assert table.content == "Cell 1 Cell 2 Cell 3 Cell 4 Cell 5 Cell 6"
 
 def test_table_model_with_list_bbox():
     table_data = {
         "bbox": [1.0, 2.0, 3.0, 4.0],
         "rows": 5,
-        "columns": 3
+        "columns": 3,
+        "content": "Cell 1 Cell 2 Cell 3 Cell 4 Cell 5 Cell 6"
     }
     
     table = Table.model_validate(table_data)
@@ -111,7 +113,7 @@ def test_table_model_with_list_bbox():
     assert table.bbox.y1 == 4.0
     assert table.rows == 5
     assert table.columns == 3
-
+    assert table.content == "Cell 1 Cell 2 Cell 3 Cell 4 Cell 5 Cell 6"
 
 def test_pdf_result_model():
     pdf_result = PDFResult(

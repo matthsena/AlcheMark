@@ -4,8 +4,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pdf2md.pdf2md import PDF2MarkDown
-from models import PDFResult
+from alchemark_ai.pdf2md.pdf2md import PDF2MarkDown
+from alchemark_ai.models import PDFResult
 
 
 def test_init_pdf2md():

@@ -48,12 +48,12 @@ class Table(BaseModel):
     bbox: Union[Rect, List[float]]
     rows: int
     columns: int
+    content: Optional[str] = None
 
     @model_validator(mode='before')
     @classmethod
     def process_bbox(cls, data):
         if isinstance(data, dict) and 'bbox' in data:
-            # Handle bbox if it's a list of floats [x0, y0, x1, y1]
             if isinstance(data['bbox'], list) and len(data['bbox']) == 4:
                 data['bbox'] = {
                     'x0': data['bbox'][0],

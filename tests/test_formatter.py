@@ -5,8 +5,8 @@ import re
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from formatter.formatter_md import FormatterMD
-from models import PDFResult, FormattedResult
+from alchemark_ai.formatter.formatter_md import FormatterMD
+from alchemark_ai.models import PDFResult, FormattedResult, Table
 
 
 @pytest.fixture
@@ -61,6 +61,43 @@ def mock_pdf_result_empty_text():
         images=[],
         graphics=[],
         text="",
+        words=[]
+    )
+
+
+@pytest.fixture
+def mock_pdf_result_with_table():
+    return PDFResult(
+        metadata={
+            "format": "PDF 1.7",
+            "title": "Sample Table",
+            "author": "Author",
+            "subject": "",
+            "keywords": "",
+            "creator": "Creator",
+            "producer": "Producer",
+            "creationDate": "2023-01-01",
+            "modDate": "2023-01-01",
+            "trapped": "",
+            "encryption": None,
+            "file_path": "/path/to/sample_table.pdf",
+            "page_count": 1,
+            "page": 1
+        },
+        toc_items=[],
+        tables=[Table(bbox=[0,0,100,100], rows=2, columns=2)],
+        images=[],
+        graphics=[],
+        text="""# Sample Document with Table
+
+Here is a simple table:
+
+| Header 1 | Header 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+
+Some more text.
+""",
         words=[]
     )
 
@@ -189,15 +226,6 @@ def test_format_success(mock_pdf_result, monkeypatch):
     assert result[0].tokens > 0
 
 
-def test_format_error():
-    formatter = FormatterMD(["not a PDFResult"])
-    
-    with pytest.raises(ValueError) as excinfo:
-        formatter.format()
-    
-    assert "Error formatting content" in str(excinfo.value)
-
-
 def test_format_with_missing_attributes(mock_pdf_result, monkeypatch):
     delattr(mock_pdf_result, 'tables')
     
@@ -215,3 +243,37 @@ def test_format_with_missing_attributes(mock_pdf_result, monkeypatch):
     assert isinstance(result[0], FormattedResult)
     assert isinstance(result[0].elements.tables, list)
     assert len(result[0].elements.tables) == 0 
+
+
+def test_format_with_table(mock_pdf_result_with_table, monkeypatch):
+    formatter = FormatterMD([mock_pdf_result_with_table])
+    
+    def mock_detect(text):
+        return "en"
+    
+    monkeypatch.setattr("langdetect.detect", mock_detect)
+    
+    result = formatter.format()
+    
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert isinstance(result[0], FormattedResult)
+    assert result[0].metadata.file_path == "/path/to/sample_table.pdf"
+    assert len(result[0].elements.tables) == 1
+    
+    table = result[0].elements.tables[0]
+    assert isinstance(table, Table)
+    assert table.rows == 2
+    assert table.columns == 2
+    assert table.content == "| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n"
+    assert result[0].language == "en"
+    assert result[0].tokens > 0
+
+
+def test_format_error():
+    formatter = FormatterMD(["not a PDFResult"])
+    
+    with pytest.raises(ValueError) as excinfo:
+        formatter.format()
+    
+    assert "Error formatting content" in str(excinfo.value)

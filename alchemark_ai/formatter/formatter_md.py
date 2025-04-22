@@ -1,5 +1,5 @@
-from ..models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link
-from typing import List
+from ..models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link, Table
+from typing import List, Optional
 import tiktoken
 from langdetect import detect as detect_language
 import re
@@ -44,12 +44,41 @@ class FormatterMD:
         except Exception as e:
             raise ValueError(f"[FORMATTER] Error counting markdown elements: {e}")
         
+    def _extract_tables(self, text: str) -> List[Optional[str]]:
+        """Extract table content from markdown text using regex."""
+        try:
+            # Regex pattern to match markdown tables
+            # This looks for lines that have pipe characters (|) with potential content between them
+            table_pattern = r'(?:\|[^\n]*\|\n)+(?:\|[-:| ]*\|\n)(?:\|[^\n]*\|\n)+'
+            
+            # Find all matches
+            tables = re.findall(table_pattern, text, re.MULTILINE)
+            
+            return tables
+        except Exception as e:
+            raise ValueError(f"[FORMATTER] Error extracting tables from text: {e}")
+        
     def format(self) -> List[FormattedResult]:
         try:
             self._check_content()
             results = []
             for item in self.content:
                 markdown_elements = self._count_markdown_elements(item.text)
+                extracted_tables = self._extract_tables(item.text)
+                
+                # Create a copy of tables with content added
+                tables_with_content = []
+                if hasattr(item, 'tables') and item.tables:
+                    for i, table in enumerate(item.tables):
+                        # Create a new Table with the same properties plus content
+                        table_content = extracted_tables[i] if i < len(extracted_tables) else None
+                        tables_with_content.append(Table(
+                            bbox=table.bbox,
+                            rows=table.rows,
+                            columns=table.columns,
+                            content=table_content
+                        ))
+                
                 formatted_data = FormattedResult(
                     metadata=FormattedMetadata(
                         file_path=item.metadata.file_path,
@@ -58,7 +87,7 @@ class FormatterMD:
                         text_length=len(item.text) if item.text else 0,
                     ),
                     elements=FormattedElements(
-                        tables=item.tables if hasattr(item, 'tables') and item.tables else [],
+                        tables=tables_with_content,
                         images=item.images if hasattr(item, 'images') and item.images else [],
                         titles=markdown_elements['titles'],
                         lists=markdown_elements['lists'],

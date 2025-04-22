@@ -2,9 +2,11 @@ import pytest
 import sys
 import os
 
-from pdf2md.pdf2md import PDF2MarkDown
-from formatter.formatter_md import FormatterMD
-from models import PDFResult, FormattedResult
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from alchemark_ai.pdf2md.pdf2md import PDF2MarkDown
+from alchemark_ai.formatter.formatter_md import FormatterMD
+from alchemark_ai.models import PDFResult, FormattedResult
 
 
 def test_pdf_to_formatted_markdown_integration(sample_pdf_path, monkeypatch):
