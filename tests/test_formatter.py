@@ -6,7 +6,7 @@ import re
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from alchemark_ai.formatter.formatter_md import FormatterMD
-from alchemark_ai.models import PDFResult, FormattedResult, Table
+from alchemark_ai.models import PDFResult, FormattedResult, Table, Image
 
 
 @pytest.fixture
@@ -97,6 +97,56 @@ Here is a simple table:
 | Cell 1   | Cell 2   |
 
 Some more text.
+""",
+        words=[]
+    )
+
+
+@pytest.fixture
+def mock_pdf_result_with_images():
+    return PDFResult(
+        metadata={
+            "format": "PDF 1.7",
+            "title": "Sample Images",
+            "author": "Author",
+            "subject": "",
+            "keywords": "",
+            "creator": "Creator",
+            "producer": "Producer",
+            "creationDate": "2023-01-01",
+            "modDate": "2023-01-01",
+            "trapped": "",
+            "encryption": None,
+            "file_path": "/path/to/sample_images.pdf",
+            "page_count": 1,
+            "page": 1
+        },
+        toc_items=[],
+        tables=[],
+        images=[
+            Image(
+                number=1,
+                bbox={"x0": 0, "y0": 0, "x1": 100, "y1": 100},
+                width=100,
+                height=100
+            ),
+            Image(
+                number=2,
+                bbox={"x0": 0, "y0": 0, "x1": 200, "y1": 200},
+                width=200,
+                height=200
+            )
+        ],
+        graphics=[],
+        text="""# Sample Document with Images
+
+Here is a sample image:
+
+![Image 1](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=)
+
+Some text in between images.
+
+![Image 2](data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+/iiiigD/2Q==)
 """,
         words=[]
     )
@@ -277,3 +327,75 @@ def test_format_error():
         formatter.format()
     
     assert "Error formatting content" in str(excinfo.value)
+
+
+def test_format_with_inline_images(mock_pdf_result_with_images, monkeypatch):
+    formatter = FormatterMD([mock_pdf_result_with_images], keep_images_inline=True)
+    
+    def mock_detect(text):
+        return "en"
+    
+    monkeypatch.setattr("langdetect.detect", mock_detect)
+    
+    result = formatter.format()
+    
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert isinstance(result[0], FormattedResult)
+    assert len(result[0].elements.images) == 2
+    assert result[0].elements.images[0].base64.startswith("data:image/png;base64,")
+    assert result[0].elements.images[1].base64.startswith("data:image/jpeg;base64,")
+    
+    # Verify images are kept inline when keep_images_inline=True
+    assert "![Image 1](data:image/png;base64," in result[0].text
+    assert "![Image 2](data:image/jpeg;base64," in result[0].text
+
+
+def test_format_with_image_references(mock_pdf_result_with_images, monkeypatch):
+    formatter = FormatterMD([mock_pdf_result_with_images], keep_images_inline=False)
+    
+    def mock_detect(text):
+        return "en"
+    
+    monkeypatch.setattr("langdetect.detect", mock_detect)
+    
+    result = formatter.format()
+    
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert isinstance(result[0], FormattedResult)
+    assert len(result[0].elements.images) == 2
+    
+    # Verify image hashes exist
+    assert result[0].elements.images[0].hash is not None
+    assert result[0].elements.images[1].hash is not None
+    
+    # Verify inline images are replaced with references
+    assert "![Image 1](data:image/png;base64," not in result[0].text
+    assert "![Image 2](data:image/jpeg;base64," not in result[0].text
+    # Instead of checking for exact hash values, just check for [IMAGE] format
+    assert "[IMAGE](" in result[0].text
+    # Make sure there are two IMAGE references (one for each image)
+    assert result[0].text.count("[IMAGE](") == 2
+
+
+def test_extract_images(mock_pdf_result_with_images):
+    formatter = FormatterMD([mock_pdf_result_with_images])
+    
+    text = mock_pdf_result_with_images.text
+    extracted_images = formatter._extract_images(text)
+    
+    assert len(extracted_images) == 2
+    # The regex returns tuples with two capture groups, one of which will be empty
+    assert extracted_images[0][0].startswith("data:image/png;base64,")
+    assert extracted_images[1][0].startswith("data:image/jpeg;base64,")
+
+
+def test_format_error_with_images():
+    # Test error handling when extracting images
+    formatter = FormatterMD([])
+    
+    with pytest.raises(ValueError) as excinfo:
+        formatter._extract_images(123)  # Passing non-string should raise error
+    
+    assert "Error extracting images from text" in str(excinfo.value)
