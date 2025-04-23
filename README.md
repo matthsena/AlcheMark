@@ -26,7 +26,11 @@ pip install -e .
 from alchemark_ai import pdf2md
 
 # Convert PDF to markdown
-results = pdf2md("path/to/document.pdf", process_images=True)
+# pdf_file_path: Path to the PDF document to be converted
+# process_images: When True, extracts images from the PDF (default: False)
+# keep_images_inline: When True, keeps base64 images inline in markdown; when False, 
+#                     replaces with references to image hashes (default: False)
+results = pdf2md("path/to/document.pdf", process_images=True, keep_images_inline=True)
 
 # Each result is a FormattedResult object with the structure:
 # {
@@ -39,7 +43,7 @@ results = pdf2md("path/to/document.pdf", process_images=True)
 #   },
 #   "elements": {
 #     "tables": List[Table],  # Tables extracted from the page
-#     "images": List[Image],  # Images extracted from the page
+#     "images": List[Image],  # Images extracted from the page (with optional base64 data)
 #     "titles": List[str],    # Titles/headers detected
 #     "lists": List[str],     # List items detected
 #     "links": List[Link]     # Links with text and URL
@@ -77,6 +81,7 @@ AlcheMark AI provides a seamless solution for converting PDF documents into well
 - **Rich Metadata Extraction**: Preserve document metadata including title, author, creation date
 - **Element Analysis**: Automatic detection and counting of markdown elements (headings, lists, links)
 - **Table & Image Support**: Extract and format tables and images from PDFs
+- **Inline Image Handling**: Option to keep images inline as base64 or replace with image references
 - **Token Counting**: Built-in token counting using tiktoken for LLM integration
 - **Structured Output**: Get page-by-page results with detailed metadata
 
@@ -90,13 +95,38 @@ AlcheMark AI provides a seamless solution for converting PDF documents into well
 | **metadata.text_length** | `int` | Character count of the extracted text |
 | **metadata.processed_timestamp** | `float` | Unix timestamp when the page was processed |
 | **elements.tables** | `List[Table]` | Tables extracted from the page with their structure preserved |
-| **elements.images** | `List[Image]` | Images extracted from the page with their metadata |
+| **elements.images** | `List[Image]` | Images extracted from the page with their metadata, including optional base64 content and hash |
 | **elements.titles** | `List[str]` | Headings and titles detected in the page |
 | **elements.lists** | `List[str]` | List items (ordered and unordered) found in the page |
 | **elements.links** | `List[Link]` | Hyperlinks with their display text and target URLs |
 | **text** | `str` | The complete markdown text content of the page |
 | **tokens** | `int` | Token count for the page (useful for LLM context planning) |
 | **language** | `str` | Detected language of the page content |
+
+## Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| **process_images** | `False` | Enable extraction and processing of images from the PDF |
+| **keep_images_inline** | `False` | Keep images inline as base64 in the markdown text. When set to `False`, images are replaced with references (`[IMAGE](hash)`) |
+
+## Test Coverage
+
+AlcheMark AI maintains a high test coverage to ensure reliability:
+
+```
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+alchemark_ai/configs/logger.py               2      0   100%
+alchemark_ai/formatter/formatter_md.py      80      2    98%
+alchemark_ai/models/FormattedResult.py      25      0   100%
+alchemark_ai/models/PDFResult.py            56      0   100%
+alchemark_ai/pdf2md/pdf2md.py               30      0   100%
+------------------------------------------------------------
+TOTAL                                      193      2    99%
+```
+
+Current test suite includes 37 tests covering all major functionality, with an overall coverage of 99%.
 
 ## Contributing
 
