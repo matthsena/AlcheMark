@@ -11,7 +11,7 @@ from .formatter.formatter_md import FormatterMD
 from .models.FormattedResult import FormattedResult, FormattedMetadata, FormattedElements
 from typing import List
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
 
 # Define what gets imported with 'from alchemark_ai import *'
 __all__ = ['FormattedResult', 'pdf2md']

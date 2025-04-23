@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alchemark-ai"
-version = "0.1.7"
+version = "0.1.8"
 description = "AlcheMark AI - PDF to Markdown conversion with rich metadata and element analysis"
 readme = "README.md"
 authors = [
