@@ -1,4 +1,4 @@
-from .PDFResult import PDFResult, Image
-from .FormattedResult import FormattedResult, FormattedMetadata, FormattedElements, Link, Table
+from .PDFResult import PDFResult
+from .FormattedResult import FormattedResult, FormattedMetadata, FormattedElements, Link, Table, Image
 
 __all__ = ['PDFResult', 'FormattedResult', 'FormattedMetadata', 'FormattedElements', 'Link', 'Table', 'Image']

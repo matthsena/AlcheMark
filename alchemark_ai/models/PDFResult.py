@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional, Union
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 
 class Rect(BaseModel):
     x0: float
@@ -29,7 +29,8 @@ class Image(BaseModel):
     bbox: Rect
     width: int
     height: int
-
+    base64: Optional[str] = None
+    hash: Optional[str] = None
     @model_validator(mode='before')
     @classmethod
     def process_rect(cls, data):

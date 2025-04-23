@@ -3,10 +3,10 @@ import os
 
 def main():
     pdf_file_path = os.path.join(os.path.dirname(__file__), '../sample/Sample.pdf')
-    process_images = False
+    process_images = True
 
     try:
-        results = alchemark_ai.pdf2md(pdf_file_path, process_images)
+        results = alchemark_ai.pdf2md(pdf_file_path, process_images, keep_images_inline=True)
 
         for result in results:
             print(result.model_dump_json(indent=4))

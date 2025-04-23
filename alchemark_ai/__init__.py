@@ -14,11 +14,12 @@ from typing import List
 __version__ = "0.1.5"
 
 # Define what gets imported with 'from alchemark_ai import *'
-__all__ = ['PDF2MarkDown', 'FormatterMD', 'FormattedResult', 'FormattedMetadata', 'FormattedElements', 'pdf2md']
+__all__ = ['FormattedResult', 'pdf2md']
 
 def pdf2md(
     pdf_file_path: str, 
-    process_images: bool = False
+    process_images: bool = False,
+    keep_images_inline: bool = False
 ) -> List[FormattedResult]:
     """
     Convert a PDF file to markdown and format the results.
@@ -26,7 +27,7 @@ def pdf2md(
     Args:
         pdf_file_path: Path to the PDF file
         process_images: Whether to extract and process images
-        
+        keep_images_inline: Whether to keep images inline in the markdown text or to use a reference to the image (Image hash)
     Returns:
         List of FormattedResult objects with the following structure:
         
@@ -49,5 +50,5 @@ def pdf2md(
     """
     pdf_converter = PDF2MarkDown(pdf_file_path, process_images)
     markdown_content = pdf_converter.convert()
-    formatter = FormatterMD(markdown_content)
+    formatter = FormatterMD(markdown_content, keep_images_inline)
     return formatter.format() 

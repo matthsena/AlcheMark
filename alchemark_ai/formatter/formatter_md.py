@@ -1,13 +1,15 @@
-from ..models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link, Table
+from ..models import PDFResult, FormattedResult, FormattedMetadata, FormattedElements, Link, Table, Image
 from typing import List, Optional
 import tiktoken
 from langdetect import detect as detect_language
+import hashlib
 import re
 
 class FormatterMD:
-    def __init__(self, content: List[PDFResult]):
+    def __init__(self, content: List[PDFResult], keep_images_inline: bool = False):
         self.content = content
         self.encoding = tiktoken.encoding_for_model("gpt-4o")
+        self.keep_images_inline = keep_images_inline
 
     def _check_content(self):
         if not isinstance(self.content, list):
@@ -45,18 +47,22 @@ class FormatterMD:
             raise ValueError(f"[FORMATTER] Error counting markdown elements: {e}")
         
     def _extract_tables(self, text: str) -> List[Optional[str]]:
-        """Extract table content from markdown text using regex."""
         try:
-            # Regex pattern to match markdown tables
-            # This looks for lines that have pipe characters (|) with potential content between them
             table_pattern = r'(?:\|[^\n]*\|\n)+(?:\|[-:| ]*\|\n)(?:\|[^\n]*\|\n)+'
             
-            # Find all matches
             tables = re.findall(table_pattern, text, re.MULTILINE)
             
             return tables
         except Exception as e:
             raise ValueError(f"[FORMATTER] Error extracting tables from text: {e}")
+    
+    def _extract_images(self, text: str) -> List[Optional[str]]:
+        try:
+            image_pattern = r'(?:!\[.*?\]\((data:image\/[^;]+;base64,[^)]+)\)|<img[^>]*src="(data:image\/[^;]+;base64,[^"]+)"[^>]*>)'
+            images = re.findall(image_pattern, text, re.MULTILINE)
+            return images
+        except Exception as e:
+            raise ValueError(f"[FORMATTER] Error extracting images from text: {e}")
         
     def format(self) -> List[FormattedResult]:
         try:
@@ -65,18 +71,39 @@ class FormatterMD:
             for item in self.content:
                 markdown_elements = self._count_markdown_elements(item.text)
                 extracted_tables = self._extract_tables(item.text)
-                
-                # Create a copy of tables with content added
+                extracted_images = self._extract_images(item.text)
                 tables_with_content = []
                 if hasattr(item, 'tables') and item.tables:
                     for i, table in enumerate(item.tables):
-                        # Create a new Table with the same properties plus content
                         table_content = extracted_tables[i] if i < len(extracted_tables) else None
                         tables_with_content.append(Table(
                             bbox=table.bbox,
                             rows=table.rows,
                             columns=table.columns,
                             content=table_content
+                        ))
+                        
+                images_with_content = []
+                
+                if hasattr(item, 'images') and item.images:
+                    for i, image in enumerate(item.images):
+                        image_content = extracted_images[i][0] if i < len(extracted_images) else None
+                        image_content = extracted_images[i][0] if i < len(extracted_images) and extracted_images[i][0] else ""
+                        image_hash = hashlib.md5(image_content.encode()).hexdigest() if image_content else None
+                        
+                        if image_content:
+                            if not self.keep_images_inline:
+                                item.text = re.sub(r'!\[.*?\]\((data:image\/[^;]+;base64,[^)]+)\)', f'[IMAGE]({image_hash})', item.text, flags=re.DOTALL)
+                                
+                            image_content = f'{image_content.split("=")[0]}='
+                                
+                        images_with_content.append(Image(
+                            number=image.number,
+                            bbox=image.bbox,
+                            width=image.width,
+                            height=image.height,
+                            base64=image_content,
+                            hash=image_hash
                         ))
                 
                 formatted_data = FormattedResult(
@@ -88,7 +115,7 @@ class FormatterMD:
                     ),
                     elements=FormattedElements(
                         tables=tables_with_content,
-                        images=item.images if hasattr(item, 'images') and item.images else [],
+                        images=images_with_content,
                         titles=markdown_elements['titles'],
                         lists=markdown_elements['lists'],
                         links=markdown_elements['links'],
