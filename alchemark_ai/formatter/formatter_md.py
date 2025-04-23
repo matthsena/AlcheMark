@@ -122,7 +122,7 @@ class FormatterMD:
                     ),
                     text=item.text or "",
                     tokens=len(self.encoding.encode(item.text)) if item.text else 0,
-                    language=detect_language(item.text)
+                    language=detect_language(item.text) if item.text else None
                 )
                 results.append(formatted_data)
             return results

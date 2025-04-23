@@ -1,6 +1,6 @@
 import time
 from pydantic import BaseModel, Field
-from typing import List, Any
+from typing import List, Optional
 from .PDFResult import Image, Table
 
 class Link(BaseModel):
@@ -27,4 +27,4 @@ class FormattedResult(BaseModel):
     elements: FormattedElements
     text: str
     tokens: int
-    language: str
+    language: Optional[str] = None
