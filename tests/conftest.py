@@ -1,6 +1,5 @@
 import os
 import pytest
-from pathlib import Path
 
 @pytest.fixture
 def sample_pdf_path():

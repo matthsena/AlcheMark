@@ -1,5 +1,5 @@
 import pymupdf4llm
-import os
+from pathlib import Path
 from ..configs.logger import logging
 from ..models import PDFResult
 from typing import List
@@ -13,9 +13,10 @@ class PDF2MarkDown:
     def _check_file(self):
         try:
             logging.info(f"[CHECK FILE] Checking if the file {self.file_path} exists and is a PDF.")
-            if not os.path.isfile(self.file_path):
+            file_path = Path(self.file_path)
+            if not file_path.is_file():
                 raise FileNotFoundError(f"[CHECK FILE] The file {self.file_path} does not exist.")
-            if not self.file_path.lower().endswith('.pdf'):
+            if file_path.suffix.lower() != '.pdf':
                 raise ValueError(f"[CHECK FILE] The file {self.file_path} is not a PDF file.")
         except Exception as e:
             raise ValueError(f"[CHECK FILE] Invalid file: {self.file_path} --> {e}")

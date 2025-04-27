@@ -1,12 +1,12 @@
 import alchemark_ai
-import os
+from pathlib import Path
 
 def main():
-    pdf_file_path = os.path.join(os.path.dirname(__file__), '../sample/Sample.pdf')
+    pdf_file_path = Path(__file__).parent / '../sample/Sample.pdf'
     process_images = True
 
     try:
-        results = alchemark_ai.pdf2md(pdf_file_path, process_images, keep_images_inline=True)
+        results = alchemark_ai.pdf2md(str(pdf_file_path.resolve()), process_images, keep_images_inline=True)
 
         for result in results:
             print(result.model_dump_json(indent=4))
